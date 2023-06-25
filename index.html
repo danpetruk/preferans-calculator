@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Калькулятор для преферанса</title>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript" >
+        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+        ym(94103025, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true
+        });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/94103025" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    <script src="js/jquery.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+
+</head>
+<body>
+
+
+
+<div id="field-container">
+<div id="field" >
+
+    <div class="player" id="north" style="">
+        <div class="whists">
+            <div class="whist-field australia center-text whist1"><p></p></div>
+            <div class="whist-field australia center-text whist2"><p></p></div>
+            <div class="whist-field australia center-text whist3"><p></p></div>
+        </div>
+        <div class="pool center-text australia"><p></p></div>
+        <div class="mountain center-text australia"><p></p></div>
+        <div class="name">
+            <div class="score australia center-text"><p></p></div>
+
+            <div class="name-input-container">
+                <input class="name-input australia" placeholder="" value="dsvsdfa" type="text">
+
+            </div>
+
+        </div>
+    </div>
+    <div class="player" id="cover"></div>
+
+    <div id="target-container">
+        <div id="target">
+            <input id="target-input" class="" placeholder="" value="0" type="number">
+        </div>
+    </div>
+
+
+</div>
+</div>
+
+<div id="edit" class="fixed-action-btn ">
+    <a class="btn-floating btn-large red waves-effect waves-light">
+        <i class="large material-icons">mode_edit</i>
+    </a>
+    <ul>
+        <li><a onclick="about()" class="btn-floating deep-purple waves-effect waves-light"><i class="material-icons">help_outline</i></a></li>
+        <li><a onclick="restart()" class="btn-floating blue waves-effect waves-light"><i class="material-icons">restart_alt</i></a></li>
+        <li><a onclick="changePlayers()"  class="btn-floating cyan waves-effect waves-light"><i id="change-players" class="material-icons">restart_alt</i></a></li>
+        <li><a onclick="undo()" class="btn-floating yellow waves-effect waves-light"><i class="material-icons">undo</i></a></li>
+        <li><a onclick="redo()" class="btn-floating orange waves-effect waves-light"><i class="material-icons">redo</i></a></li>
+
+    </ul>
+</div>
+
+<div id="add" class="fixed-action-btn ">
+    <a class="btn-floating btn-large green waves-effect waves-light" >
+        <i class="large material-icons">add</i>
+    </a>
+</div>
+
+<nav class="">
+    <div class="nav-wrapper green">
+        <div id="nav-content">
+            <div class="waves-light waves-effect waves-circle" id="logo-container">
+                <img id="logo" src="candelabra.png">
+            </div>
+        </div>
+
+    </div>
+</nav>
+
+<nav style="opacity: 0"> <!--Костыль для отображения тени-->
+</nav>
+
+<div id="overlay"></div>
+
+<div id="what" class="collection">
+    <a class="collection-item question">Что за игра?</a>
+    <a id="raspasi"    class="collection-item minicard option waves-effect waves-green">Распасы</a>
+    <a id="for-tricks" class="collection-item minicard option waves-effect waves-green">На взятки</a>
+    <a id="misere"     class="collection-item minicard option waves-effect waves-green">Мизер</a>
+    <a id="manual"     class="collection-item minicard option waves-effect waves-green">Ручной ввод</a>
+</div>
+
+<div id="who-plays" class="collection">
+    <a class="collection-item question">Кто объявил игру?</a>
+    <a class="collection-item minicard option waves-effect waves-green name-text quadruplicate"></a>
+</div>
+<div id="whom" class="collection">
+    <a class="collection-item question">Кому?</a>
+    <a class="collection-item minicard option waves-effect waves-green name-text quadruplicate"></a>
+</div>
+<div id="on-whom" class="collection">
+    <a class="collection-item question">На кого?</a>
+    <a class="collection-item minicard option waves-effect waves-green name-text quadruplicate"></a>
+</div>
+<div id="game" class="collection">
+    <a class="collection-item question">Сколько заявлено?</a>
+    <a class="collection-item minicard option waves-effect waves-green">6</a>
+    <a class="collection-item minicard option waves-effect waves-green">7</a>
+    <a class="collection-item minicard option waves-effect waves-green">8</a>
+    <a class="collection-item minicard option waves-effect waves-green">9</a>
+    <a class="collection-item minicard option waves-effect waves-green">10</a>
+</div>
+<div id="manual-options" class="collection">
+    <a class="collection-item question">Куда?</a>
+    <a id="manual-mountain" class="collection-item minicard option waves-effect waves-green">Гора</a>
+    <a id="manual-pool" class="collection-item minicard option waves-effect waves-green">Пуля</a>
+    <a id="manual-whist" class="collection-item minicard option waves-effect waves-green">Висты</a>
+</div>
+<div class="collection quadruplicate whist-options">
+    <a class="collection-item question name-text"></a>
+    <a class="collection-item minicard option waves-effect waves-green whist     ">Вист</a>
+    <a class="collection-item minicard option waves-effect waves-green pass      ">Пас</a>
+    <a class="collection-item minicard option waves-effect waves-green half-whist">Полвиста</a>
+</div>
+
+
+
+<div id="rests" class="collection">
+    <a class="collection-item question">Кто отдыхал?</a>
+    <a class="collection-item minicard option waves-effect waves-green name-text quadruplicate">Север</a>
+</div>
+
+
+
+<div id="value" class="collection">
+    <a class="collection-item question">Сколько добавить?</a>
+    <div class="card minicard">
+        <div class="card-image">
+            <div class="row">
+                <div class="input-field col s10 offset-s1">
+                    <input id="icon_prefix" type="number" step="1"   required>
+                    <label for="icon_prefix">Значение</label>
+                </div>
+                <a class="btn-floating btn-large halfway-fab waves-effect waves-light green"><i class="material-icons">check</i></a>
+            </div>
+        </div>
+    </div>
+    <div class="collection-item question"></div>
+</div>
+
+
+
+
+<div id="tricks" class="collection">
+    <a class="collection-item question">Сколько взяток?</a>
+    <div class="collection-item minicard quadruplicate">
+        <span class="name-text"></span><br>
+        <div class="row">
+            <a class="waves-effect waves-green col s2 tricks-number">0</a>
+            <a class="waves-effect waves-green col s2 tricks-number">1</a>
+            <a class="waves-effect waves-green col s2 tricks-number">2</a>
+            <a class="waves-effect waves-green col s2 tricks-number">3</a>
+            <a class="waves-effect waves-green col s2 tricks-number">4</a>
+            <a class="waves-effect waves-green col s2 tricks-number">5</a>
+        </div>
+        <div class="row">
+            <a class="waves-effect waves-green col s2 tricks-number">6</a>
+            <a class="waves-effect waves-green col s2 tricks-number">7</a>
+            <a class="waves-effect waves-green col s2 tricks-number">8</a>
+            <a class="waves-effect waves-green col s2 tricks-number">9</a>
+            <a class="waves-effect waves-green col s4 tricks-number">1&nbsp;0</a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div id="about" class="modal modal-fixed-footer">
+    <div class="modal-content">
+        <h4>Калькулятор для преферанса - расчёт пули онлайн</h4>
+        <p>Данное приложение предназначено для того, чтобы максимально быстро и удобно вести счёт в преферансе.
+            Расчёты ведутся по правилам Сочинки. Приложение поддерживает как и счёт для 3, так и для 4 игроков.
+            <br><br>
+            © Даниил Петрук 2023. <a href="https://github.com/danpetruk/preferans-calculator">Github</a>
+            <br><br>
+            В рамках приложения были использованы:
+            <a href="https://www.flaticon.com/ru/free-icon/candlestick-lighting_82354">
+                схематичное изображение канделябра (автор Freepik)
+            </a>,
+            <a href="https://zerply.com/r/29Fe3F8Z/lumiere-designs">фотография канделябра (автор Christopher Brändström)</a>, MaterializeCSS и JQuery
+            <br>
+            <br>
+            Лицензии:
+            <br>
+            <pre>
+                The MIT License (MIT)
+
+Copyright (c) 2014-2019 Materialize
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Copyright OpenJS Foundation and other contributors, https://openjsf.org/
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+            </pre>
+
+
+        </p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Close</a>
+    </div>
+</div>
+
+
+<img id="candelabra" src="candelabra.jpg">
+
+<h1 id="copyright">Калькулятор для преферанса - расчёт пули онлайн. © Даниил Петрук 2023. <a href="https://github.com/danpetruk/preferans-calculator">Github</a>.</h1>
+
+
+<script type="text/javascript" src="js/materialize.min.js"></script>
+<script type="text/javascript" src="js/script.js"></script>
+
+
+</body>
+
+</html>
