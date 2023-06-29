@@ -134,6 +134,7 @@ function update() {
             let best = 10
             players.forEach(s=>best=Math.min(best,i.tricks[s]))
             players.forEach(s=>addMountain(i.tricks[s]-best,s))
+            players.forEach(s=>addPool(i.tricks[s]===0?1:0,s))
         }
         if (i.type==="misere") {
             if (i.tricks[i.who]===0)
