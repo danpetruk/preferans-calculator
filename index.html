@@ -36,6 +36,7 @@
 </head>
 <body>
 
+<div id="felt-bg"></div>
 
 
 <div id="field-container">
@@ -65,6 +66,7 @@
         <div id="target">
             <input id="target-input" class="" placeholder="" value="0" type="number">
         </div>
+        <button id="finish-pill" type="button">Игра окончена</button>
     </div>
 
 
@@ -76,6 +78,7 @@
         <i class="large material-icons">mode_edit</i>
     </a>
     <ul>
+        <li><a onclick="toggleSound()" id="sound-toggle" class="btn-floating teal waves-effect waves-light"><i id="sound-icon" class="material-icons">volume_up</i></a></li>
         <li><a onclick="about()" class="btn-floating deep-purple waves-effect waves-light"><i class="material-icons">help_outline</i></a></li>
         <li><a onclick="restart()" class="btn-floating blue waves-effect waves-light"><i class="material-icons">restart_alt</i></a></li>
         <li><a onclick="changePlayers()"  class="btn-floating cyan waves-effect waves-light"><i id="change-players" class="material-icons">restart_alt</i></a></li>
@@ -102,10 +105,23 @@
     </div>
 </nav>
 
-<nav style="opacity: 0"> <!--Костыль для отображения тени-->
+<nav style="display: none"> <!--Костыль для отображения тени-->
 </nav>
 
 <div id="overlay"></div>
+
+<div id="finale">
+    <div id="confetti"></div>
+    <div class="finale-panel">
+        <button id="finale-close" class="btn-floating waves-effect waves-light">
+            <i class="material-icons">close</i>
+        </button>
+        <div class="finale-kicker">Пуля закрыта</div>
+        <div id="finale-title"></div>
+        <div id="finale-subtitle"></div>
+        <div id="finale-places"></div>
+    </div>
+</div>
 
 <div id="what" class="collection">
     <a class="collection-item question">Что за игра?</a>
@@ -205,7 +221,7 @@
         <p>Данное приложение предназначено для того, чтобы максимально быстро и удобно вести счёт в преферансе.
             Расчёты ведутся по правилам Сочинки. Приложение поддерживает как и счёт для 3, так и для 4 игроков.
             <br><br>
-            © Даниил Петрук 2023. <a href="https://github.com/danpetruk/preferans-calculator">Github</a>
+            © Даниил Петрук 2026. <a href="https://github.com/danpetruk/preferans-calculator">Github</a>
             <br><br>
             В рамках приложения были использованы:
             <a href="https://www.flaticon.com/ru/free-icon/candlestick-lighting_82354">
@@ -272,7 +288,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 <img id="candelabra" src="candelabra.jpg">
 
-<h1 id="copyright">Калькулятор для преферанса - расчёт пули онлайн. © Даниил Петрук 2023. <a href="https://github.com/danpetruk/preferans-calculator">Github</a>.</h1>
+<h1 id="copyright">Калькулятор для преферанса - расчёт пули онлайн. © Даниил Петрук 2026. <a href="https://github.com/danpetruk/preferans-calculator">Github</a>.</h1>
 
 
 <script type="text/javascript" src="js/materialize.min.js"></script>

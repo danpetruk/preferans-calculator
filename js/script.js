@@ -91,8 +91,216 @@ function determinePlayers(resting) {
 }
 
 let addSign = i=>`${i>=0?"+":""}${i}`
+function activePlayers() {
+    return game.players===4?sides:sides.filter(s=>s!=="north")
+}
 
-function update() {
+function normalizeScore(score) {
+    let players = activePlayers()
+    let totalScore = 0
+    players.forEach(s=>totalScore+=score[s])
+
+    let remainder = ((totalScore%game.players)+game.players)%game.players
+    let average = (totalScore-remainder)/game.players
+    let sidesSorted = Object.entries(score).filter(([s,])=>players.includes(s)).sort(([,a],[,b]) => a-b)
+
+    players.forEach(s=>score[s]-=average)
+    for (let i=0; i<remainder; i++)
+        score[sidesSorted[i][0]]-=1
+}
+
+let renderedScore = null
+let finishShownFor = null
+let finishDismissedFor = null
+let latestFinalePoolSum = 0
+let latestFinaleKey = null
+let latestGameFinished = false
+let soundEnabled = localStorage.getItem("preferansSound")!=="off"
+let audioContext = null
+
+function updateSoundButton() {
+    $("#sound-icon").text(soundEnabled?"volume_up":"volume_off")
+    $("#sound-toggle").toggleClass("sound-off",!soundEnabled)
+}
+
+function toggleSound() {
+    soundEnabled = !soundEnabled
+    localStorage.setItem("preferansSound",soundEnabled?"on":"off")
+    updateSoundButton()
+    if (soundEnabled)
+        playSound("toggle")
+}
+
+function soundPattern(kind) {
+    if (kind==="pool")
+        return [[0,523,.07,"triangle",.04],[.08,659,.08,"triangle",.035]]
+    if (kind==="mountain")
+        return [[0,180,.11,"sawtooth",.035],[.1,130,.1,"sawtooth",.025]]
+    if (kind==="finish")
+        return [[0,523,.08,"triangle",.04],[.09,659,.08,"triangle",.04],[.18,784,.16,"triangle",.035]]
+    if (kind==="undo")
+        return [[0,330,.06,"square",.025],[.07,247,.08,"square",.02]]
+    if (kind==="error")
+        return [[0,120,.08,"sawtooth",.03]]
+    if (kind==="toggle")
+        return [[0,440,.06,"sine",.025]]
+    return [[0,420,.045,"square",.025]]
+}
+
+function playSound(kind) {
+    if (!soundEnabled)
+        return
+    try {
+        let AudioContext = window.AudioContext || window.webkitAudioContext
+        if (!AudioContext)
+            return
+        if (audioContext===null)
+            audioContext = new AudioContext()
+        if (audioContext.state==="suspended")
+            audioContext.resume()
+        let now = audioContext.currentTime
+        soundPattern(kind).forEach(([delay,frequency,duration,type,volume])=>{
+            let oscillator = audioContext.createOscillator()
+            let gain = audioContext.createGain()
+            let start = now+delay
+            oscillator.type = type
+            oscillator.frequency.setValueAtTime(frequency,start)
+            gain.gain.setValueAtTime(0.0001,start)
+            gain.gain.linearRampToValueAtTime(volume,start+.01)
+            gain.gain.exponentialRampToValueAtTime(0.0001,start+duration)
+            oscillator.connect(gain)
+            gain.connect(audioContext.destination)
+            oscillator.start(start)
+            oscillator.stop(start+duration+.03)
+        })
+    } catch (e) {}
+}
+
+function soundForRound(round) {
+    if (round.type==="pool")
+        return "pool"
+    if (round.type==="mountain")
+        return "mountain"
+    return "card"
+}
+
+function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g,i=>({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        "\"":"&quot;",
+        "'":"&#39;"
+    })[i])
+}
+
+function cloneScore() {
+    let copy = {}
+    sides.forEach(s=>copy[s]=score[s])
+    return copy
+}
+
+function applyScoreVibes(previousScore) {
+    $(".player").removeClass("leader-player trailing-player")
+    $(".score").removeClass("score-pop score-up score-down")
+    let players = activePlayers()
+    let sorted = players.map(s=>[s,score[s]]).sort(([,a],[,b])=>b-a)
+
+    if (game.rounds.length>0 && sorted[0][1]!==sorted[sorted.length-1][1]) {
+        $(`#${sorted[0][0]}`).addClass("leader-player")
+        $(`#${sorted[sorted.length-1][0]}`).addClass("trailing-player")
+    }
+
+    players.forEach(s=>{
+        let delta = previousScore===null?0:score[s]-previousScore[s]
+        if (delta!==0) {
+            let scoreBox = $(`.${s} .score`)
+            scoreBox.addClass(`score-pop ${delta>0?"score-up":"score-down"}`)
+        }
+    })
+    renderedScore = cloneScore()
+}
+
+function renderFinale(poolSum) {
+    let players = activePlayers()
+    let sorted = players.map(s=>({
+        side:s,
+        name:getName(s),
+        score:score[s]
+    })).sort((a,b)=>b.score-a.score)
+    let places = sorted.map((player,index)=>
+        `<div class="finale-place ${index===0?"winner":""}"><span>${index+1}. ${escapeHtml(player.name)}</span><strong>${addSign(player.score)}</strong></div>`
+    ).join("")
+
+    $("#finale-title").text(`${sorted[0].name} забирает стол`)
+    $("#finale-subtitle").text(`Пуля ${poolSum}/${game.target*game.players}`)
+    $("#finale-places").html(places)
+}
+
+function fireConfetti() {
+    let confetti = $("#confetti")
+    let suits = ["♠","♥","♦","♣"]
+    let colors = ["#d8bd6a","#b3313b","#ffffff","#173f35"]
+    confetti.empty()
+    for (let i=0; i<44; i++) {
+        let piece = $("<span class='confetti-piece'></span>")
+        piece.text(suits[i%suits.length])
+        piece.css({
+            left: `${Math.random()*100}%`,
+            color: colors[i%colors.length],
+            "animation-delay": `${Math.random()*.9}s`,
+            "animation-duration": `${2.8+Math.random()*1.5}s`
+        })
+        confetti.append(piece)
+    }
+    setTimeout(()=>confetti.empty(),4500)
+}
+
+function finaleKey(poolSum) {
+    return `${game.players}:${game.target}:${game.rounds.length}:${poolSum}`
+}
+
+function showFinale(poolSum,withEffects=true) {
+    latestFinaleKey = finaleKey(poolSum)
+    renderFinale(poolSum)
+    finishShownFor = latestFinaleKey
+    $("#finale").addClass("is-visible")
+    if (withEffects) {
+        fireConfetti()
+        playSound("finish")
+    }
+}
+
+function updateFinale(gameFinished,poolSum,reason="update") {
+    latestGameFinished = gameFinished
+    latestFinalePoolSum = poolSum
+    latestFinaleKey = gameFinished?finaleKey(poolSum):null
+    $("#finish-pill").toggleClass("is-visible",gameFinished)
+
+    if (!gameFinished) {
+        $("#finale").removeClass("is-visible")
+        finishShownFor = null
+        finishDismissedFor = null
+        return
+    }
+
+    renderFinale(poolSum)
+    if (reason==="round" && latestFinaleKey!==finishShownFor && latestFinaleKey!==finishDismissedFor)
+        showFinale(poolSum)
+}
+
+function closeFinale() {
+    finishDismissedFor = finishShownFor
+    $("#finale").removeClass("is-visible")
+}
+
+function openFinaleFromPill() {
+    if (latestGameFinished)
+        showFinale(latestFinalePoolSum)
+}
+
+function update(reason="update") {
+    let previousRenderedScore = renderedScore===null?null:{...renderedScore}
     localStorage.setItem("game",JSON.stringify(game))
     sides.forEach(s=>$(`#${s} .name-input`).val(game[s]))
     pool = {}
@@ -187,43 +395,21 @@ function update() {
                 score[s]-=whists[s2][s]
             })
         })
-        let totalScore = 0
-        sides.forEach(s=>totalScore+=score[s])
-        let sidesSorted = Object.entries(score).filter(([s,])=>s!=="north"||game.players===4).sort(([,a],[,b]) => a-b)
-        if (game.players===3 && sidesSorted[0][0]==="north")
-            sidesSorted.shift()
-        if (game.players===3) {
-            if (totalScore%3>=1)
-                score[sidesSorted[0][0]]-=1
-            if (totalScore%3>=2)
-                score[sidesSorted[1][0]]-=1
-            totalScore-=totalScore%3
-        }
-        if (game.players===4) {
-            if (totalScore%4>=1)
-                score[sidesSorted[0][0]]-=1
-            if (totalScore%4>=2)
-                score[sidesSorted[1][0]]-=1
-            if (totalScore%4>=3)
-                score[sidesSorted[2][0]]-=1
-            totalScore-=totalScore%4
-        }
-
-
-        sides.forEach(s=>score[s]-=totalScore/game.players) //TODO TODO TODO
+        normalizeScore(score)
         sides.forEach(s=>$(`.${s} .score p`).html(`${createHtml(score[s])}<br><span>(${createHtml(score[s]-prevScore[s])})</span>`))
 
     })
+    applyScoreVibes(previousRenderedScore)
     let poolSum = 0
     sides.forEach(s=>poolSum+=pool[s])
-    if (game.target*game.players<=poolSum) {
-        $("#target-input").addClass("white-text")
-        $("#target-container").addClass("green")
-        $(".pool p").append(" >> игра окончена (по очкам)")
+    let targetValue = parseInt(game.target)
+    let gameFinished = targetValue>0 && targetValue*game.players<=poolSum
+    if (gameFinished) {
+        $("#target-container").addClass("finished")
     } else {
-        $("#target-input").removeClass("white-text")
-        $("#target-container").removeClass("green")
+        $("#target-container").removeClass("finished")
     }
+    updateFinale(gameFinished,poolSum,reason)
 
 }
 
@@ -237,14 +423,14 @@ $(".name-input").on(typing,(e)=>{
     let s = side($(e.target))
     $(` .${s} .name-text, .${s}.name-text`).text(e.target.value)
     game[s]=e.target.value
-    update()
+    update("names")
 })
 $("#target-input").on(typing,(e)=>{
     game.target=e.target.value
-    update()
+    update("target")
 })
 
-update()
+update("init")
 $(".name-input").click()
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -263,6 +449,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 $("#overlay").hide()
 $(".collection").hide()
+updateSoundButton()
+$("#finale-close").on("click",closeFinale)
+$("#finish-pill").on("click",openFinaleFromPill)
 
 
 $("#overlay").on("click",()=>{
@@ -304,6 +493,7 @@ $("#tricks .tricks-number").on("click",ev => {
 
     }
     if (total!==10) {
+        playSound("error")
         M.toast({html: 'Сумма взяток не равна 10'})
         showTricks()
     } else {
@@ -388,29 +578,32 @@ function round2text(round) {
 let undoneRounds = []
 function addRound(round,clear=true) {
     game.rounds.push(round)
+    playSound(soundForRound(round))
     M.toast({'html':round2text(round)})
-    update()
+    update("round")
     if (clear)
         undoneRounds=[]
 }
 
 function undo() {
     var last = game.rounds.pop()
-    if (typeof(last)==="undefined")
+    if (typeof(last)==="undefined") {
+        playSound("error")
         M.toast({"html":"Не осталось раундов"})
-    else {
-        update()
+    } else {
+        playSound("undo")
+        update("undo")
         undoneRounds.push(last)
         M.toast({"html":"Удален раунд: " + round2text(last)})
     }
 }
 function redo() {
     var last = undoneRounds.pop()
-    if (typeof(last)==="undefined")
+    if (typeof(last)==="undefined") {
+        playSound("error")
         M.toast({"html":"Не осталось раундов"})
-    else {
+    } else {
         addRound(last,false)
-        update()
     }
 }
 $("#misere").on("click",()=>{
@@ -443,7 +636,6 @@ $("#for-tricks").on("click",()=>{
                         if (Object.values(whist).filter(i=>i==="whist").length===0) {
                             addRound({"type": "for-tricks", "rests": rests,"who":whoPlays, "target":target,"whist":whist})
                             $("#overlay").hide("fast")
-                            update()
                         } else {
                             showTricks()
                             action = () => addRound({"type": "for-tricks", "rests": rests,"who":whoPlays,"target":target, "whist":whist,"tricks":tricks})
@@ -535,7 +727,11 @@ $("#value input").on("keyup",e=>{
 function restart() {
     if (confirm("Начать новую игру?")) {
         game=defaultGame
-        update()
+        renderedScore = null
+        finishShownFor = null
+        finishDismissedFor = null
+        playSound("undo")
+        update("reset")
     }
 
 }
@@ -548,8 +744,9 @@ function changePlayers() {
         }
     }
     game.players = game.players===3?4:3;
+    playSound("toggle")
     M.toast({html: game.players + ' игрока'})
-    update()
+    update("players")
 }
 
 let candelabraIsShown=false
