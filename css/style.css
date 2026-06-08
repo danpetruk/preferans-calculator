@@ -35,23 +35,15 @@ body:before {
 #felt-bg {
     position: fixed;
     inset: 0;
-    background:
+    background-color: var(--bs-body-bg);
+    background-image:
         linear-gradient(0deg, rgba(255,255,255,0.72), rgba(255,255,255,0.72)),
-        var(--bs-body-bg);
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' viewBox='0 0 260 260'%3E%3Cg fill='%23444746' fill-opacity='0.06' font-family='Georgia,serif' font-size='44'%3E%3Ctext x='18' y='62' transform='rotate(-16 18 62)'%3E%E2%99%A0%3C/text%3E%3Ctext x='126' y='48' transform='rotate(17 126 48)'%3E%E2%99%A5%3C/text%3E%3Ctext x='212' y='94' transform='rotate(-20 212 94)'%3E%E2%99%A6%3C/text%3E%3Ctext x='72' y='168' transform='rotate(19 72 168)'%3E%E2%99%A3%3C/text%3E%3Ctext x='182' y='218' transform='rotate(-15 182 218)'%3E%E2%99%A0%3C/text%3E%3C/g%3E%3C/svg%3E");
+    background-position: 0 0, 0 0;
+    background-repeat: no-repeat, repeat;
+    background-size: 100% 100%, 260px 260px;
     z-index: 0;
     pointer-events: none;
-    overflow: hidden;
-}
-#felt-bg:before {
-    content: "\2660   \2665   \2666   \2663   \2660   \2665   \2666   \2663\A \2663   \2666   \2665   \2660   \2663   \2666   \2665   \2660\A \2660   \2665   \2666   \2663   \2660   \2665   \2666   \2663\A \2663   \2666   \2665   \2660   \2663   \2666   \2665   \2660\A \2660   \2665   \2666   \2663   \2660   \2665   \2666   \2663\A \2663   \2666   \2665   \2660   \2663   \2666   \2665   \2660";
-    position: absolute;
-    inset: -12vmin;
-    color: rgba(68,71,70,0.045);
-    font-size: 7vmin;
-    line-height: 1.95;
-    letter-spacing: 4vmin;
-    white-space: pre-wrap;
-    transform: rotate(-14deg);
 }
 :root{
     --field:min(100vmin,calc(100vh - var(--nav)));
